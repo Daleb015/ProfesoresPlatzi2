@@ -218,4 +218,36 @@ public class TeacherController {
 
   }
 
+  @RequestMapping(value = "/teachers/{id_teacher}/images", method = RequestMethod.DELETE, headers = "Accept=application/json")
+  public ResponseEntity<?> deleteTeacherImage(@PathVariable("id_teacher") Long idteacher) {
+    if (idteacher == null) {
+      return new ResponseEntity(new CustomErrorType("Ingrese id teacher valido"),
+          HttpStatus.NO_CONTENT);
+    }
+
+    Teacher teacher = teacherService.findById(idteacher);
+
+    if (teacher == null) {
+      return new ResponseEntity(new CustomErrorType("No existe el teacher con el id enviado"),
+          HttpStatus.NOT_FOUND);
+    }
+    
+    if (teacher.getAvatar().isEmpty()||teacher.getAvatar()==null) {
+      return new ResponseEntity(new CustomErrorType("No tiene imagen asignada"),
+          HttpStatus.NOT_FOUND);
+    }
+    
+    String fileName = teacher.getAvatar();
+    Path path = Paths.get(fileName);
+    File file = path.toFile();
+    if (file.exists()) {
+      file.delete();
+    }
+    
+    teacher.setAvatar("");
+    teacherService.updateTeacher(teacher);
+    return new ResponseEntity<Teacher>(HttpStatus.NO_CONTENT);
+
+  }
+
 }
