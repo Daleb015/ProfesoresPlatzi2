@@ -229,4 +229,36 @@ public class SocialMediaController {
     }
 
   }
+  
+  @RequestMapping(value = "/socialmedias/{id_socialmedia}/images", method = RequestMethod.DELETE, headers = "Accept=application/json")
+  public ResponseEntity<?> deletesocialMediaImage(@PathVariable("id_socialmedia") Long idsocialmedia) {
+    if (idsocialmedia == null) {
+      return new ResponseEntity(new CustomErrorType("Ingrese id socialmedia valido"),
+          HttpStatus.NO_CONTENT);
+    }
+
+    SocialMedia socialMedia = socialmediaservice.findById(idsocialmedia);
+
+    if (socialMedia == null) {
+      return new ResponseEntity(new CustomErrorType("No existe el socialmedia con el id enviado"),
+          HttpStatus.NOT_FOUND);
+    }
+    
+    if (socialMedia.getIcon().isEmpty()||socialMedia.getIcon()==null) {
+      return new ResponseEntity(new CustomErrorType("No tiene imagen asignada"),
+          HttpStatus.NOT_FOUND);
+    }
+    
+    String fileName = socialMedia.getIcon();
+    Path path = Paths.get(fileName);
+    File file = path.toFile();
+    if (file.exists()) {
+      file.delete();
+    }
+    
+    socialMedia.setIcon("");
+    socialmediaservice.updateSocialMedia(socialMedia);
+    return new ResponseEntity<SocialMedia>(HttpStatus.NO_CONTENT);
+
+  }
 }
