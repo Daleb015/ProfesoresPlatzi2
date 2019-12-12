@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.platzi.profesoresplatzi.model.SocialMedia;
+import com.platzi.profesoresplatzi.model.Teacher;
 import com.platzi.profesoresplatzi.service.SocialMediaService;
 import com.platzi.profesoresplatzi.util.CustomErrorType;
 
@@ -191,6 +192,40 @@ public class SocialMediaController {
       return new ResponseEntity(
           new CustomErrorType("Error al subir: " + multipartFile.getOriginalFilename()),
           HttpStatus.NO_CONTENT);
+    }
+
+  }
+  
+  @RequestMapping(value = "/socialmedias/{id_socialmedia}/images/", method = RequestMethod.GET)
+  public ResponseEntity<byte[]> getSocialMediaImage(@PathVariable("id_socialmedia") Long idsocialmedia) {
+    if (idsocialmedia == null) {
+      return new ResponseEntity(new CustomErrorType("Ingrese id socialmedia valido"),
+          HttpStatus.NO_CONTENT);
+    }
+
+    SocialMedia socialMedia = socialmediaservice.findById(idsocialmedia);
+
+    if (socialMedia == null) {
+      return new ResponseEntity(new CustomErrorType("No existe el socialmedia con el id enviado"),
+          HttpStatus.NOT_FOUND);
+    }
+
+    try {
+      String fileName = socialMedia.getIcon();
+      Path path = Paths.get(fileName);
+      File f = path.toFile();
+      System.out.println(f);
+      if (!f.exists()) {
+        return new ResponseEntity(new CustomErrorType("Imagen no encontrada"), HttpStatus.CONFLICT);
+      }
+
+      byte[] image = Files.readAllBytes(path);
+      return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      return new ResponseEntity(new CustomErrorType("error al mostrar imagen"),
+          HttpStatus.CONFLICT);
     }
 
   }
